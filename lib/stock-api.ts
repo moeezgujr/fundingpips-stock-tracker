@@ -1,7 +1,7 @@
 import type { StockQuote, StockSearchResult, StockHistoricalData } from "./types"
 
 // Alpha Vantage API configuration
-const API_KEY = process.env.NEXT_PUBLIC_ALPHA_VANTAGE_API_KEY || "demo"
+const API_KEY =  "OT3H473NZO09S6MP";
 const BASE_URL = "https://www.alphavantage.co/query"
 
 class StockAPI {
@@ -34,10 +34,10 @@ class StockAPI {
 
   async getStockQuote(symbol: string): Promise<StockQuote> {
     // For demo purposes, return mock data if no API key
-    if (API_KEY === "demo") {
-      // console.log('demo')
-      return this.getMockQuote(symbol)
-    }
+    // if (API_KEY === "demo") {
+    //   // console.log('demo')
+    //   return this.getMockQuote(symbol)
+    // }
     console.log(symbol)
     const url = `${BASE_URL}?function=GLOBAL_QUOTE&symbol=${symbol}&apikey=${API_KEY}`
 
@@ -78,9 +78,9 @@ class StockAPI {
 
   async searchStocks(query: string): Promise<StockSearchResult[]> {
     // For demo purposes, return mock search results
-    if (API_KEY === "demo") {
-      return this.getMockSearchResults(query)
-    }
+    // if (API_KEY === "demo") {
+    //   return this.getMockSearchResults(query)
+    // }
 
     const url = `${BASE_URL}?function=SYMBOL_SEARCH&keywords=${query}&apikey=${API_KEY}`
 
@@ -109,9 +109,9 @@ class StockAPI {
 
   async getHistoricalData(symbol: string, timeRange: string): Promise<StockHistoricalData[]> {
     // For demo purposes, return mock historical data
-    if (API_KEY === "demo") {
-      return this.getMockHistoricalData(symbol, timeRange)
-    }
+    // if (API_KEY === "demo") {
+    //   return this.getMockHistoricalData(symbol, timeRange)
+    // }
 
     const functionMap: Record<string, string> = {
       "1D": "TIME_SERIES_INTRADAY",
