@@ -11,6 +11,7 @@ export function StockDetails({ stock }: StockDetailsProps) {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {/* Price Information */}
       <Card>
         <CardHeader>
           <CardTitle>Current Price</CardTitle>
@@ -34,6 +35,7 @@ export function StockDetails({ stock }: StockDetailsProps) {
         </CardContent>
       </Card>
 
+      {/* Key Statistics */}
       <Card>
         <CardHeader>
           <CardTitle>Key Statistics</CardTitle>

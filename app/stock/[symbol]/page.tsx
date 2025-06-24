@@ -1,7 +1,7 @@
 import { Suspense } from "react"
 import { notFound } from "next/navigation"
+import { StockDetailsWithQuery } from "@/components/stock-details-with-query"
 import { StockChart } from "@/components/stock-chart"
-import { StockDetails } from "@/components/stock-details"
 import { AddToWatchlistButton } from "@/components/add-to-watchlist-button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -15,6 +15,7 @@ interface StockPageProps {
     symbol: string
   }
 }
+
 export async function generateStaticParams() {
   const popularStocks = ["AAPL", "GOOGL", "MSFT", "TSLA", "AMZN"]
   return popularStocks.map((symbol) => ({ symbol }))
@@ -38,7 +39,6 @@ export async function generateMetadata({ params }: StockPageProps) {
 export default async function StockPage({ params }: StockPageProps) {
   try {
     const stock = await stockApi.getStockQuote(params.symbol)
-    console.log(stock)
 
     return (
       <div className="container mx-auto px-4 py-8 space-y-6">
@@ -59,8 +59,9 @@ export default async function StockPage({ params }: StockPageProps) {
           <AddToWatchlistButton symbol={stock.symbol} name={stock.name} />
         </div>
 
-        <StockDetails stock={stock} />
-
+        <Suspense fallback={<StockDetailsSkeleton />}>
+          <StockDetailsWithQuery symbol={params.symbol} initialData={stock} />
+        </Suspense>
         <Card>
           <CardHeader>
             <CardTitle>Price Chart</CardTitle>
@@ -77,6 +78,38 @@ export default async function StockPage({ params }: StockPageProps) {
     console.error("Error loading stock:", error)
     notFound()
   }
+}
+
+function StockDetailsSkeleton() {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Current Price</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <Skeleton className="h-12 w-32" />
+          <Skeleton className="h-6 w-24" />
+          <Skeleton className="h-4 w-40" />
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle>Key Statistics</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 gap-4">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <div key={i}>
+                <Skeleton className="h-4 w-16 mb-1" />
+                <Skeleton className="h-5 w-20" />
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  )
 }
 
 function ChartSkeleton() {

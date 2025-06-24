@@ -1,51 +1,25 @@
 "use client"
 
 import type React from "react"
-
-import { useState, useCallback, useRef, useEffect } from "react"
+import { useState, useRef, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Search, Loader2 } from "lucide-react"
-import { stockApi } from "@/lib/stock-api"
 import { useDebounce } from "@/hooks/use-debounce"
-import type { StockSearchResult } from "@/lib/types"
+import { useStockSearch } from "@/hooks/use-stock-query"
 
 export function SearchBar() {
   const [query, setQuery] = useState("")
-  const [results, setResults] = useState<StockSearchResult[]>([])
-  const [isLoading, setIsLoading] = useState(false)
   const [showResults, setShowResults] = useState(false)
   const router = useRouter()
   const searchRef = useRef<HTMLDivElement>(null)
 
   const debouncedQuery = useDebounce(query, 300)
 
-  // Search function with error handling
-  const searchStocks = useCallback(async (searchQuery: string) => {
-    if (!searchQuery.trim()) {
-      setResults([])
-      return
-    }
-
-    setIsLoading(true)
-    try {
-      const searchResults = await stockApi.searchStocks(searchQuery)
-      setResults(searchResults)
-      setShowResults(true)
-    } catch (error) {
-      console.error("Search error:", error)
-      setResults([])
-    } finally {
-      setIsLoading(false)
-    }
-  }, [])
-
-  // Debounced search effect
-  useEffect(() => {
-    searchStocks(debouncedQuery)
-  }, [debouncedQuery, searchStocks])
+  // Use React Query for search
+  const { data: results = [], isLoading, error } = useStockSearch(debouncedQuery)
 
   // Handle click outside to close results
   useEffect(() => {
@@ -58,6 +32,13 @@ export function SearchBar() {
     document.addEventListener("mousedown", handleClickOutside)
     return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [])
+
+  // Show results when we have data
+  useEffect(() => {
+    if (results.length > 0 && debouncedQuery) {
+      setShowResults(true)
+    }
+  }, [results, debouncedQuery])
 
   const handleStockSelect = (symbol: string) => {
     setShowResults(false)
@@ -110,6 +91,15 @@ export function SearchBar() {
                 </div>
               </button>
             ))}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Error state */}
+      {error && debouncedQuery && (
+        <Card className="absolute top-full mt-2 w-full z-50">
+          <CardContent className="p-4 text-center text-muted-foreground">
+            Unable to search at this time. Please try again.
           </CardContent>
         </Card>
       )}

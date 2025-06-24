@@ -8,9 +8,7 @@ class StockAPI {
   private async fetchWithRetry(url: string, retries = 3): Promise<Response> {
     for (let i = 0; i < retries; i++) {
       try {
-        const response = await fetch(url, {
-          next: { revalidate: 300 }, // Cache for 5 minutes
-        })
+        const response = await fetch(url)
 
         if (response.ok) {
           return response
@@ -33,7 +31,6 @@ class StockAPI {
   }
 
   async getStockQuote(symbol: string): Promise<StockQuote> {
-    // For demo purposes, return mock data if no API key
     if (API_KEY === "demo") {
       return this.getMockQuote(symbol)
     }

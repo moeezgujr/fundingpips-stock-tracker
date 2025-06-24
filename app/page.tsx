@@ -1,7 +1,7 @@
 import { Suspense } from "react"
-import { SearchBar } from "@/components/search-bar"
-import { WatchlistSection } from "@/components/watchlist-section"
-import { MarketOverview } from "@/components/market-overview"
+import { SearchBar } from "@/components/search/search-bar"
+import { WatchlistSection } from "@/components/watchlist/watchlist-section"
+import { MarketOverview } from "@/components/market/market-overview"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 

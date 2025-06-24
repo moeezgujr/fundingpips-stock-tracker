@@ -4,16 +4,24 @@ import { useMemo } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { Skeleton } from "@/components/ui/skeleton"
 import { useWatchlistStore } from "@/store/watchlist-store"
-import { Trash2, TrendingUp, TrendingDown } from "lucide-react"
+import { useStockQuotes } from "@/hooks/use-stock-query"
+import { Trash2, TrendingUp, TrendingDown, RefreshCw } from "lucide-react"
 import Link from "next/link"
-import { useStockPrices } from "@/hooks/use-stock-prices"
 
 export function WatchlistSection() {
   const { watchlist, removeFromWatchlist } = useWatchlistStore()
+
+  // Memoize the symbols array to prevent unnecessary re-renders
   const symbols = useMemo(() => watchlist.map((item) => item.symbol), [watchlist])
 
-  const { prices, isLoading } = useStockPrices(symbols)
+  // Use React Query for fetching stock prices
+  const stockQueries = useStockQuotes(symbols)
+
+  // Check if any queries are loading
+  const isLoading = stockQueries.some((query) => query.isLoading)
+  const hasErrors = stockQueries.some((query) => query.error)
 
   if (watchlist.length === 0) {
     return (
@@ -36,14 +44,20 @@ export function WatchlistSection() {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
-          Your Watchlist
+          <div className="flex items-center gap-2">
+            Your Watchlist
+            {isLoading && <RefreshCw className="h-4 w-4 animate-spin" />}
+          </div>
           <Badge variant="secondary">{watchlist.length} stocks</Badge>
         </CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {watchlist.map((item) => {
-            const priceData = prices[item.symbol]
+          {watchlist.map((item, index) => {
+            const query = stockQueries[index]
+            const priceData = query?.data
+            const isQueryLoading = query?.isLoading
+            const queryError = query?.error
             const isPositive = priceData?.changePercent && priceData.changePercent > 0
 
             return (
@@ -58,8 +72,13 @@ export function WatchlistSection() {
                   </Link>
                 </div>
 
-                {isLoading ? (
-                  <div className="text-sm text-muted-foreground">Loading...</div>
+                {isQueryLoading ? (
+                  <div className="mr-4 space-y-2">
+                    <Skeleton className="h-4 w-16" />
+                    <Skeleton className="h-3 w-12" />
+                  </div>
+                ) : queryError ? (
+                  <div className="text-sm text-muted-foreground mr-4">Error loading</div>
                 ) : priceData ? (
                   <div className="text-right mr-4">
                     <div className="font-semibold">${priceData.price.toFixed(2)}</div>
@@ -86,6 +105,14 @@ export function WatchlistSection() {
             )
           })}
         </div>
+
+        {hasErrors && (
+          <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <p className="text-sm text-yellow-800">
+              Some stock prices couldn't be loaded. Data will refresh automatically.
+            </p>
+          </div>
+        )}
       </CardContent>
     </Card>
   )
